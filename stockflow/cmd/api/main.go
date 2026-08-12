@@ -14,26 +14,26 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 
 	// Ajuste os imports abaixo conforme o caminho do seu módulo
-	"github.com/raianderreis/stockflow/stockflow/internal/application/auth"
-	"github.com/raianderreis/stockflow/stockflow/internal/application/customer"
-	"github.com/raianderreis/stockflow/stockflow/internal/application/inventory"
-	"github.com/raianderreis/stockflow/stockflow/internal/application/product"
-	"github.com/raianderreis/stockflow/stockflow/internal/application/purchase"
-	"github.com/raianderreis/stockflow/stockflow/internal/application/reports"
-	"github.com/raianderreis/stockflow/stockflow/internal/application/sales"
+	"github.com/railanderreis/stockflow/stockflow/internal/application/auth"
+	"github.com/railanderreis/stockflow/stockflow/internal/application/customer"
+	"github.com/railanderreis/stockflow/stockflow/internal/application/inventory"
+	"github.com/railanderreis/stockflow/stockflow/internal/application/product"
+	"github.com/railanderreis/stockflow/stockflow/internal/application/purchase"
+	"github.com/railanderreis/stockflow/stockflow/internal/application/reports"
+	"github.com/railanderreis/stockflow/stockflow/internal/application/sales"
 
-	httpRoutes "github.com/raianderreis/stockflow/stockflow/internal/interfaces/http"
-	authHandler "github.com/raianderreis/stockflow/stockflow/internal/interfaces/http/handlers/auth"
-	customerHandler "github.com/raianderreis/stockflow/stockflow/internal/interfaces/http/handlers/customer"
-	inventoryHandler "github.com/raianderreis/stockflow/stockflow/internal/interfaces/http/handlers/inventory"
-	productHandler "github.com/raianderreis/stockflow/stockflow/internal/interfaces/http/handlers/product"
-	purchaseHandler "github.com/raianderreis/stockflow/stockflow/internal/interfaces/http/handlers/purchase"
-	reportsHandler "github.com/raianderreis/stockflow/stockflow/internal/interfaces/http/handlers/reports"
-	salesHandler "github.com/raianderreis/stockflow/stockflow/internal/interfaces/http/handlers/sales"
-	httpMiddleware "github.com/raianderreis/stockflow/stockflow/internal/interfaces/http/middleware"
+	httpRoutes "github.com/railanderreis/stockflow/stockflow/internal/interfaces/http"
+	authHandler "github.com/railanderreis/stockflow/stockflow/internal/interfaces/http/handlers/auth"
+	customerHandler "github.com/railanderreis/stockflow/stockflow/internal/interfaces/http/handlers/customer"
+	inventoryHandler "github.com/railanderreis/stockflow/stockflow/internal/interfaces/http/handlers/inventory"
+	productHandler "github.com/railanderreis/stockflow/stockflow/internal/interfaces/http/handlers/product"
+	purchaseHandler "github.com/railanderreis/stockflow/stockflow/internal/interfaces/http/handlers/purchase"
+	reportsHandler "github.com/railanderreis/stockflow/stockflow/internal/interfaces/http/handlers/reports"
+	salesHandler "github.com/railanderreis/stockflow/stockflow/internal/interfaces/http/handlers/sales"
+	httpMiddleware "github.com/railanderreis/stockflow/stockflow/internal/interfaces/http/middleware"
 
 	// Mock/Implementação de repositórios
-	"github.com/raianderreis/stockflow/stockflow/internal/infrastructure/repository/memory"
+	"github.com/railanderreis/stockflow/stockflow/internal/infrastructure/repository/memory"
 )
 
 func main() {
