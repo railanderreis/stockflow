@@ -1,74 +1,82 @@
 package middleware
 
 import (
-	"bytes"
-	"encoding/json"
-	"io"
-	"net/http"
-	"time"
+	"strings"
 
-	"github.com/railanderreis/stockflow/stockflow/internal/domain/audit"
+	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/raianderreis/stockflow/stockflow/internal/application/auth"
 )
 
-type responseWriterRecorder struct {
-	http.ResponseWriter
-	statusCode int
-	body       *bytes.Buffer
+type AuthMiddleware struct {
+	jwtSecret []byte
 }
 
-func (rw *responseWriterRecorder) WriteHeader(code int) {
-	rw.statusCode = code
-	rw.ResponseWriter.WriteHeader(code)
+func NewAuthMiddleware(secret string) *AuthMiddleware {
+	return &AuthMiddleware{
+		jwtSecret: []byte(secret),
+	}
 }
 
-func (rw *responseWriterRecorder) Write(b []byte) (int, error) {
-	rw.body.Write(b)
-	return rw.ResponseWriter.Write(b)
-}
+// Authenticate valida se o token Bearer no Header Authorization é válido
+func (m *AuthMiddleware) Authenticate() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		authHeader := c.Get("Authorization")
+		if authHeader == "" {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "cabeçalho de autorização ausente"})
+		}
 
-func AuditMiddleware(auditRepo audit.AuditRepository, action string, resourceType string) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Only audit mutating HTTP methods
-			if r.Method == http.MethodGet || r.Method == http.MethodHead || r.Method == http.MethodOptions {
-				next.ServeHTTP(w, r)
-				return
-			}
+		parts := strings.Split(authHeader, " ")
+		if len(parts) != 2 || parts[0] != "Bearer" {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "formato de token inválido"})
+		}
 
-			var reqBody []byte
-			if r.Body != nil {
-				reqBody, _ = io.ReadAll(r.Body)
-				r.Body = io.NopCloser(bytes.NewBuffer(reqBody))
-			}
+		tokenString := parts[1]
+		claims := &auth.Claims{}
 
-			rec := &responseWriterRecorder{
-				ResponseWriter: w,
-				statusCode:     http.StatusOK,
-				body:           bytes.NewBuffer(nil),
-			}
-
-			next.ServeHTTP(rec, r)
-
-			// Record audit log entry if operation succeeded (2xx / 3xx)
-			if rec.statusCode >= 200 && rec.statusCode < 400 {
-				actorID := r.Header.Get("X-User-ID")
-				actorEmail := r.Header.Get("X-User-Email")
-				resourceID := r.Header.Get("X-Resource-ID")
-
-				logEntry := &audit.AuditLog{
-					ActorID:      actorID,
-					ActorEmail:   actorEmail,
-					Action:       action,
-					ResourceType: resourceType,
-					ResourceID:   resourceID,
-					NewValues:    json.RawMessage(reqBody),
-					IPAddress:    r.RemoteAddr,
-					UserAgent:    r.UserAgent(),
-					CreatedAt:    time.Now(),
-				}
-
-				_ = auditRepo.Record(r.Context(), logEntry)
-			}
+		token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
+			return m.jwtSecret, nil
 		})
+
+		if err != nil || !token.Valid {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "token inválido ou expirado"})
+		}
+
+		// Armazena no contexto local da requisição HTTP
+		c.Locals("user_id", claims.UserID)
+		c.Locals("email", claims.Email)
+		c.Locals("role", claims.Role)
+		c.Locals("permissions", claims.Permissions)
+
+		return c.Next()
+	}
+}
+
+// RequirePermission verifica se o usuário autenticado possui a permissão necessária
+func (m *AuthMiddleware) RequirePermission(permission string) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		permissionsRaw := c.Locals("permissions")
+		if permissionsRaw == nil {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "acesso negado"})
+		}
+
+		permissions, ok := permissionsRaw.([]string)
+		if !ok {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "permissões inválidas"})
+		}
+
+		hasPermission := false
+		for _, p := range permissions {
+			if p == permission || p == "admin:all" {
+				hasPermission = true
+				break
+			}
+		}
+
+		if !hasPermission {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "permissão insuficiente para este recurso"})
+		}
+
+		return c.Next()
 	}
 }
