@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/railanderreis/stockflow/backend/internal/infrastructure/auth"
+	"github.com/railanderreis/stockflow/stockflow/internal/infrastructure/auth"
 )
 
 func TestJWTManager_GenerateAndValidateToken(t *testing.T) {

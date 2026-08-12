@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/railanderreis/stockflow/backend/internal/infrastructure/auth"
+	"github.com/railanderreis/stockflow/stockflow/internal/infrastructure/auth"
 )
 
 type contextKey string

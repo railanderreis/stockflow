@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/railanderreis/stockflow/backend/internal/domain/identity"
-	"github.com/railanderreis/stockflow/backend/internal/infrastructure/auth"
+	"github.com/railanderreis/stockflow/stockflow/internal/domain/identity"
+	"github.com/railanderreis/stockflow/stockflow/internal/infrastructure/auth"
 	"golang.org/x/crypto/bcrypt"
 )
 
