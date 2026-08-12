@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	appInventory "github.com/railanderreis/stockflow/stockflow/application/inventory"
-	"github.com/railanderreis/stockflow/stockflow/domain/inventory"
+	appInventory "github.com/railanderreis/stockflow/stockflow/internal/application/inventory"
+	"github.com/railanderreis/stockflow/stockflow/internal/domain/inventory"
 )
 
 // Mock repositories and TxManager setup for isolation testing
