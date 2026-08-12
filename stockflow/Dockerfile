@@ -4,12 +4,12 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o /backend ./cmd/api
+RUN CGO_ENABLED=0 GOOS=linux go build -o /stockflow ./cmd/api
 
 # Run
 FROM alpine:latest
-RUN adduser -D backend
+RUN adduser -D stockflow
 USER stockflow
-COPY --from=builder /backend /backend
+COPY --from=builder /stockflow /stockflow
 EXPOSE 8080
-CMD ["/backend"]
+CMD ["/stockflow"]
