@@ -1,18 +1,74 @@
+version: '3.8'
+
 services:
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stockflow-api
+    restart: always
     ports:
       - "8080:8080"
     environment:
-      - DATABASE_URL=postgres://postgres:postgres@db:5432/stockflow?sslmode=disable
+      - APP_ENV=production
+      - PORT=8080
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=stockflow_user
+      - DB_PASSWORD=stockflow_secret
+      - DB_NAME=stockflow_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=production_super_secret_jwt_key_change_me
     depends_on:
-      - db
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - stockflow-network
 
-  db:
+  postgres:
     image: postgres:16-alpine
+    container_name: stockflow-postgres
+    restart: always
     environment:
-      - POSTGRES_DB=stockflow
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      POSTGRES_USER: stockflow_user
+      POSTGRES_PASSWORD: stockflow_secret
+      POSTGRES_DB: stockflow_db
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stockflow_user -d stockflow_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - stockflow-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: stockflow-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - stockflow-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  stockflow-network:
+    driver: bridge
