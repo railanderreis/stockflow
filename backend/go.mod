@@ -1,4 +1,4 @@
-module github.com/railanderreis/stockflow
+module github.com/railanderreis/stockflow/backend
 
 go 1.23
 
